@@ -36,7 +36,13 @@ class User(AbstractUser):
     phone = models.CharField(max_length=20, unique=True)
     otp = models.CharField(max_length=5, blank=True, null=True)
     is_author = models.BooleanField(default=False)
-    category = models.ManyToManyField("blog.Category")
+    category = models.ManyToManyField("blog.Category", null=True, blank=True)
 
     REQUIRED_FIELDS = ['phone']
     object = UserManager()
+
+    def has_perm(self, perm, obj=None):
+        if super().has_perm(perm, obj):
+            return True
+        
+        return self.groups.filter(permissions__codename=perm).exists()

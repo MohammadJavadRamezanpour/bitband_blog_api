@@ -15,14 +15,11 @@ class Article(models.Model):
         (REJECTED, 'Rejected'),
     ]
 
-    BRONZE = 'bronze'
-    SILVER = 'silver'
-    GOLDEN = 'golden'
+    permissions = settings.PERMISSIONS
+    customers = settings.CUSTOMERS
 
     SCOPE_CHOICES = [
-        (BRONZE, 'Bronze'),
-        (SILVER, 'Silver'),
-        (GOLDEN, 'Golden'),
+        (permission_key, permission_values) for permission_key, permission_values in permissions[customers].items()
     ]
 
     title = models.CharField(max_length=100)
@@ -33,6 +30,6 @@ class Article(models.Model):
     status = models.CharField(choices=STATUS_CHOICES,
                               max_length=50, default=PENDING)
     scope = models.CharField(choices=SCOPE_CHOICES,
-                             max_length=50, default=BRONZE)
+                             max_length=50, default=settings.NORMAL)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -63,7 +63,7 @@ MIDDLEWARE = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        # 'config.authentication.CsrfExemptSessionAuthentication'
+        'config.authentication.CsrfExemptSessionAuthentication'
     ]
 }
 
@@ -144,3 +144,27 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = "user.User"
+
+CUSTOMERS = "Customers"
+ADMINS = "Admins"
+
+NORMAL = 'normal'
+BRONZE = 'bronze'
+SILVER = 'silver'
+GOLDEN = 'golden'
+
+ARTICLE_MANAGEMENT = "articale_management"
+USER_MANAGEMENT = "user_management"
+
+PERMISSIONS = {
+    CUSTOMERS: {
+        NORMAL: 'Normal',
+        BRONZE: 'Bronze',
+        SILVER: 'Silver',
+        GOLDEN: 'Golden',
+    },
+    ADMINS: {
+        ARTICLE_MANAGEMENT: 'Article Management',
+        USER_MANAGEMENT: 'User Management',
+    }
+}
