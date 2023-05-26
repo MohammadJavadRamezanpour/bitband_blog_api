@@ -9,7 +9,7 @@ class IsAdminOrReadOnly(BasePermission):
     def has_permission(self, request, view):
         if request.method in SAFE_METHODS:
             return True
-        return bool(request.user and request.user.is_staff)
+        return bool(request.user.is_authenticated and request.user.is_staff)
 
 
 class IsUserManager(BasePermission):
@@ -18,13 +18,13 @@ class IsUserManager(BasePermission):
     """
 
     def has_permission(self, request, view):
-        return bool(request.user and request.user.has_perm('user.user_management'))
+        return bool(request.user.is_authenticated and request.user.has_perm('user.user_management'))
 
 
 class IsArticleManager(BasePermission):
 
     def has_permission(self, request, view):
-        return bool(request.user and request.user.has_perm('poai.article_management'))
+        return bool(request.user.is_authenticated and request.user.has_perm('poai.article_management'))
 
 
 class IsArticleManagerOrReadOnly(BasePermission):
@@ -32,7 +32,7 @@ class IsArticleManagerOrReadOnly(BasePermission):
     def has_permission(self, request, view):
         if request.method in SAFE_METHODS:
             return True
-        return bool(request.user and request.user.has_perm('poai.article_management'))
+        return bool(request.user.is_authenticated and request.user.has_perm('poai.article_management'))
 
 
 class IsAuthorOrReadOnly(BasePermission):
@@ -40,7 +40,7 @@ class IsAuthorOrReadOnly(BasePermission):
     def has_permission(self, request, view):
         if request.method in SAFE_METHODS:
             return True
-        return bool(request.user and request.user.is_author)
+        return bool(request.user.is_authenticated and request.user.is_author)
 
 
 class CanWriteOrReadOnly(BasePermission):

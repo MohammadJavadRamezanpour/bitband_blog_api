@@ -43,7 +43,7 @@ class ArticleViewset(viewsets.ModelViewSet):
         elif is_logged_in and user.has_perm(settings.BRONZE):
             return Article.objects.filter(Q(status=Article.VERIFIED, scope__in=BRONZE_CAN_SEE) | Q(author=user))
         else:
-            return Article.objects.filter(Q(status=Article.VERIFIED, scope__in=NORMAL_CAN_SEE) | Q(author=user))
+            return Article.objects.filter(Q(status=Article.VERIFIED, scope__in=NORMAL_CAN_SEE))
 
     @action(detail=True, methods=['PATCH', 'PUT'], permission_classes=(IsArticleManager,))
     def verify(self, request, pk=None):
