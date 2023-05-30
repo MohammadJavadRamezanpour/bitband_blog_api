@@ -46,3 +46,6 @@ class User(AbstractUser):
             return True
         
         return self.groups.filter(permissions__codename=perm).exists()
+ 
+    def __str__(self):
+        return str(self.phone)

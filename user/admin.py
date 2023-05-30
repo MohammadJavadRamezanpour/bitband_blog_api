@@ -65,7 +65,7 @@ class UserAdmin(BaseUserAdmin):
     list_filter = ["is_staff"]
     fieldsets = [
         (None, {"fields": ["username", "email",
-         "phone", "password", "is_active", "is_author", "otp"]}),
+         "phone", "password", "is_active", "is_author", "is_superuser" , "otp"]}),
         ("Permissions", {"fields": [
          "is_staff", "user_permissions", "groups"]}),
     ]
@@ -85,8 +85,6 @@ class UserAdmin(BaseUserAdmin):
     filter_horizontal = []
 
 
-# Now register the new UserAdmin...
+
 admin.site.register(User, UserAdmin)
-# ... and, since we're not using Django's built-in permissions,
-# unregister the Group model from admin.
-# admin.site.unregister(Group)
+

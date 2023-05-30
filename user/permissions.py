@@ -1,4 +1,5 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
+from django.conf import settings
 
 
 class IsAdminOrReadOnly(BasePermission):
@@ -18,13 +19,13 @@ class IsUserManager(BasePermission):
     """
 
     def has_permission(self, request, view):
-        return bool(request.user.is_authenticated and request.user.has_perm('user.user_management'))
+        return bool(request.user.is_authenticated and request.user.has_perm(settings.USER_MANAGEMENT))
 
 
 class IsArticleManager(BasePermission):
 
     def has_permission(self, request, view):
-        return bool(request.user.is_authenticated and request.user.has_perm('poai.article_management'))
+        return bool(request.user.is_authenticated and request.user.has_perm(settings.ARTICLE_MANAGEMENT))
 
 
 class IsArticleManagerOrReadOnly(BasePermission):
@@ -32,7 +33,7 @@ class IsArticleManagerOrReadOnly(BasePermission):
     def has_permission(self, request, view):
         if request.method in SAFE_METHODS:
             return True
-        return bool(request.user.is_authenticated and request.user.has_perm('poai.article_management'))
+        return bool(request.user.is_authenticated and request.user.has_perm(settings.ARTICLE_MANAGEMENT))
 
 
 class IsAuthorOrReadOnly(BasePermission):
@@ -44,6 +45,7 @@ class IsAuthorOrReadOnly(BasePermission):
 
 
 class CanWriteOrReadOnly(BasePermission):
+    """Check if the user has permission to write articel, for now only author and article managers can write"""
 
     def has_permission(self, request, view):
         is_author_or_readonly = IsAuthorOrReadOnly()
