@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, AbstractUser
-
+from django.utils.crypto import get_random_string
 
 class UserManager(BaseUserManager):
     def create_user(self, phone, username, password):
@@ -36,6 +36,7 @@ class User(AbstractUser):
     phone = models.CharField(max_length=20, unique=True)
     otp = models.CharField(max_length=5, blank=True, null=True)
     is_author = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)
     category = models.ManyToManyField("blog.Category", null=True, blank=True)
 
     REQUIRED_FIELDS = ['phone']
@@ -46,6 +47,18 @@ class User(AbstractUser):
             return True
         
         return self.groups.filter(permissions__codename=perm).exists()
+    
+
+    def save(self, *args, **kwargs):
+        if not self.username:
+            while True:
+                username = get_random_string(length=6).lower()
+                try:
+                    user = User.objects.get(username=username)
+                except:
+                    self.username = username
+                    break
+        super().save(*args, **kwargs)
  
     def __str__(self):
         return str(self.phone)
