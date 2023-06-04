@@ -22,20 +22,25 @@ class UserViewSet(viewsets.ModelViewSet):
         user = self.request.user
 
         if user.is_superuser:
-            return User.object.all()
+            return User.objects.all()
         elif user.has_perm(settings.USER_MANAGEMENT):
-            return User.object.filter(is_staff=False)
+            return User.objects.filter(is_staff=False)
         elif user.has_perm(settings.ARTICLE_MANAGEMENT):
-            return User.object.filter(Q(groups__permissions__codename="user.author") | Q(user_permissions__codename="user.author"))
+            return User.objects.filter(Q(groups__permissions__codename="user.author") | Q(user_permissions__codename="user.author"))
         else:
             return User.objects.filter(id=user.id)
     
     @action(detail=True, methods=['post'], permission_classes=[IsUserManager])
     def toggle_is_author(self, request, pk=None):
         user = self.get_queryset().get(pk=pk)
-        user.is_author = not user.is_author
-        user.save()
-        return Response({"user": pk, "is_author": user.is_author}, status=200)
+
+        data = dict(is_author=not user.is_author)
+
+        serializer = self.get_serializer(user, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=200)
 
     @action(detail=False, methods=['POST'])
     def register(self, request):
@@ -44,7 +49,7 @@ class UserViewSet(viewsets.ModelViewSet):
         last_name = request.data.get("last_name")
 
         try:
-            user = User.object.create(phone=phone, first_name=first_name, last_name=last_name, otp=self.__generate_otp())
+            user = User.objects.create(phone=phone, first_name=first_name, last_name=last_name, otp=self.__generate_otp())
             self.__sms_otp(user)
             return Response({"msg": "Please send the otp sent to your phone number"}, status=200)
         except User.DoesNotExist:
@@ -56,12 +61,13 @@ class UserViewSet(viewsets.ModelViewSet):
         otp = request.data.get("otp")
 
         try:
-            user = User.object.get(phone=phone, otp=otp)
+            print(phone, otp)
+            user = User.objects.get(phone=phone, otp=otp)
             user.is_active = True
             user.save()
-            print("user saved")
             return Response({"msg": f"user with phone number {user.phone} activated, you can login now"}, status=200)
-        except User.DoesNotExist:
+        except Exception as ex:
+            print(ex)
             return Response({"error": "wrong otp or phone number"}, status=400)
         
     @action(detail=False, methods=['GET'])
@@ -69,7 +75,7 @@ class UserViewSet(viewsets.ModelViewSet):
         phone = request.GET.get("phone")
 
         try:
-            user = User.object.get(phone=phone, is_active=True)
+            user = User.objects.get(phone=phone, is_active=True)
             user.otp = self.__generate_otp()
             user.save()
             self.__sms_otp(user)
@@ -83,7 +89,7 @@ class UserViewSet(viewsets.ModelViewSet):
         otp = request.data.get("otp")
 
         try:
-            user = User.object.get(phone=phone, otp=otp, is_active=True)
+            user = User.objects.get(phone=phone, otp=otp, is_active=True)
             tokens = self.__get_tokens_for_user(user)
             return Response(tokens, status=200)
         except User.DoesNotExist:

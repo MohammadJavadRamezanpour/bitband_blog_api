@@ -8,6 +8,7 @@ class ArticleReadSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     author = serializers.SerializerMethodField()
     scope = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
 
     def get_author(self, obj):
         user = self.context['user']
@@ -17,8 +18,8 @@ class ArticleReadSerializer(serializers.ModelSerializer):
 
         return SimpleUserSerializer(obj.author).data
 
-    def get_scope(self, obj):
-        return obj.get_scope_display()
+    get_scope = lambda self, obj: obj.get_scope_display()
+    get_status = lambda self, obj: obj.get_status_display()
 
     class Meta:
         model = Article
@@ -28,7 +29,14 @@ class ArticleReadSerializer(serializers.ModelSerializer):
 
 
 class ArticleWriteSerializer(serializers.ModelSerializer):
+    def validate_category(self, obj):
+        user = self.context.get("user")
+        
+        if obj in user.category.all():
+            return obj
+        raise serializers.ValidationError("create article in your own category")
+
     class Meta:
         model = Article
-        fields = ("title", "body", "author",
+        fields = ("title", "body", "status",
                   "scope", "category",)

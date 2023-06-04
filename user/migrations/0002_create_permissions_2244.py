@@ -14,6 +14,7 @@ def create_permissions(apps, schema_editor):
         for perm_key, perm_value in settings.PERMISSIONS[permission_key].items():
             Permission.objects.get_or_create(
                 codename=perm_key, name=perm_value, content_type=content_type)
+                
 
 class Migration(migrations.Migration):
 

@@ -35,7 +35,7 @@ class ArticleViewset(viewsets.ModelViewSet):
         if is_logged_in and user.is_superuser:
             return Article.objects.all()
         elif is_logged_in and user.has_perm(settings.ARTICLE_MANAGEMENT):
-            return Article.objects.filter(category=user.category)
+            return Article.objects.filter(category__in=user.category.all())
         elif is_logged_in and user.has_perm(settings.GOLDEN):
             return Article.objects.filter(Q(status=Article.VERIFIED, scope__in=GOLDEN_CAN_SEE) | Q(author=user))
         elif is_logged_in and user.has_perm(settings.SILVER):
@@ -45,16 +45,29 @@ class ArticleViewset(viewsets.ModelViewSet):
         else:
             return Article.objects.filter(Q(status=Article.VERIFIED, scope__in=NORMAL_CAN_SEE))
 
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
     @action(detail=True, methods=['PATCH', 'PUT'], permission_classes=(IsArticleManager,))
     def verify(self, request, pk=None):
         article = self.get_queryset().get(pk=pk)
-        article.status = Article.VERIFIED
-        article.save()
+
+        data = dict(status=Article.VERIFIED)
+
+        serializer = self.get_serializer(article, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
         return Response({"msg": "Done"}, status=200)
 
     @action(detail=True, methods=['PATCH', 'PUT'], permission_classes=(IsArticleManager,))
     def reject(self, request, pk=None):
         article = self.get_queryset().get(pk=pk)
-        article.status = Article.REJECTED
-        article.save()
+
+        data = dict(status=Article.REJECTED)
+
+        serializer = self.get_serializer(article, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
         return Response({"msg": "Done"}, status=200)
