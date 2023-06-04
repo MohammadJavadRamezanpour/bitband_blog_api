@@ -19,8 +19,7 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ["username", "password",
-                  "is_active", "is_staff", "phone", "otp"]
+        fields = ["username", "password", "is_active", "is_staff", "phone", "otp"]
 
     def clean_password2(self):
         # Check that the two password entries match
@@ -49,8 +48,7 @@ class UserChangeForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ["username", "password",
-                  "is_active", "is_staff", "phone", "otp"]
+        fields = ["username", "password", "is_active", "is_staff", "phone", "otp"]
 
 
 class UserAdmin(BaseUserAdmin):
@@ -64,10 +62,23 @@ class UserAdmin(BaseUserAdmin):
     list_display = ["username", "is_staff"]
     list_filter = ["is_staff"]
     fieldsets = [
-        (None, {"fields": ["username", "email",
-         "phone", "password", "is_active", "is_author", "is_superuser" , "otp", "category"]}),
-        ("Permissions", {"fields": [
-         "is_staff", "user_permissions", "groups"]}),
+        (
+            None,
+            {
+                "fields": [
+                    "username",
+                    "email",
+                    "phone",
+                    "password",
+                    "is_active",
+                    "is_author",
+                    "is_superuser",
+                    "otp",
+                    "categories",
+                ]
+            },
+        ),
+        ("Permissions", {"fields": ["is_staff", "user_permissions", "groups"]}),
     ]
     # add_fieldsets is not a standard ModelAdmin attribute. UserAdmin
     # overrides get_fieldsets to use this attribute when creating a user.
@@ -85,6 +96,4 @@ class UserAdmin(BaseUserAdmin):
     filter_horizontal = []
 
 
-
 admin.site.register(User, UserAdmin)
-

@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from rest_framework import viewsets
 
 from blog.serializers import CategorySerializer
@@ -10,8 +12,7 @@ class CategoryViewset(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
 
-        # TODO: store these strings some where
-        if user.has_perm('user.article_management'):
-            return user.category.all()
+        if user.has_perm(settings.ARTICLE_MANAGEMENT):
+            return user.categories.all()
         else:
             return Category.objects.all()

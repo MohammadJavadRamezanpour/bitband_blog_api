@@ -7,19 +7,20 @@ from django.conf import settings
 
 from user.models import User
 
+
 def create_permissions(apps, schema_editor):
     content_type = ContentType.objects.get_for_model(User)
 
     for permission_key in settings.PERMISSIONS:
         for perm_key, perm_value in settings.PERMISSIONS[permission_key].items():
             Permission.objects.get_or_create(
-                codename=perm_key, name=perm_value, content_type=content_type)
-                
+                codename=perm_key, name=perm_value, content_type=content_type
+            )
+
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('user', '0001_initial'),
+        ("user", "0001_initial"),
     ]
 
     operations = [

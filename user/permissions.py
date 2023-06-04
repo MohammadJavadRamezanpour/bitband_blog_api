@@ -19,25 +19,46 @@ class IsUserManager(BasePermission):
     """
 
     def has_permission(self, request, view):
-        return bool(request.user.is_authenticated and request.user.has_perm(settings.USER_MANAGEMENT))
+        return bool(
+            request.user.is_authenticated
+            and request.user.has_perm(settings.USER_MANAGEMENT)
+        )
 
 
-class IsArticleManager(BasePermission):
-
-    def has_permission(self, request, view):
-        return bool(request.user.is_authenticated and request.user.has_perm(settings.ARTICLE_MANAGEMENT))
-
-
-class IsArticleManagerOrReadOnly(BasePermission):
+class IsUserManagerOrReadOnly(BasePermission):
+    """
+    Allows access only to user managers.
+    """
 
     def has_permission(self, request, view):
         if request.method in SAFE_METHODS:
             return True
-        return bool(request.user.is_authenticated and request.user.has_perm(settings.ARTICLE_MANAGEMENT))
+
+        return bool(
+            request.user.is_authenticated
+            and request.user.has_perm(settings.USER_MANAGEMENT)
+        )
+
+
+class IsArticleManager(BasePermission):
+    def has_permission(self, request, view):
+        return bool(
+            request.user.is_authenticated
+            and request.user.has_perm(settings.ARTICLE_MANAGEMENT)
+        )
+
+
+class IsArticleManagerOrReadOnly(BasePermission):
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+        return bool(
+            request.user.is_authenticated
+            and request.user.has_perm(settings.ARTICLE_MANAGEMENT)
+        )
 
 
 class IsAuthorOrReadOnly(BasePermission):
-
     def has_permission(self, request, view):
         if request.method in SAFE_METHODS:
             return True
@@ -53,4 +74,7 @@ class CanWriteOrReadOnly(BasePermission):
         if request.method in SAFE_METHODS:
             return True
 
-        return bool(is_author_or_readonly.has_permission(request, view) or is_article_manager_or_readonly.has_permission(request, view))
+        return bool(
+            is_author_or_readonly.has_permission(request, view)
+            or is_article_manager_or_readonly.has_permission(request, view)
+        )

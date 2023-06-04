@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from blog.models import Article
 from .category import CategorySerializer
-from user.serializers import SimpleUserSerializer, UserSerializer
 
 
 class ArticleReadSerializer(serializers.ModelSerializer):
@@ -11,7 +10,9 @@ class ArticleReadSerializer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField()
 
     def get_author(self, obj):
-        user = self.context['user']
+        from user.serializers import SimpleUserSerializer, UserSerializer
+
+        user = self.context["user"]
 
         if user.is_staff:
             return UserSerializer(obj.author).data
@@ -23,20 +24,33 @@ class ArticleReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Article
-        fields = ("pk", "title", "body", "author",
-                  "status", "scope", "category",
-                  "created_at", "updated_at")
+        fields = (
+            "pk",
+            "title",
+            "body",
+            "author",
+            "status",
+            "scope",
+            "category",
+            "created_at",
+            "updated_at",
+        )
 
 
 class ArticleWriteSerializer(serializers.ModelSerializer):
     def validate_category(self, obj):
         user = self.context.get("user")
-        
-        if obj in user.category.all():
+
+        if obj in user.categories.all():
             return obj
         raise serializers.ValidationError("create article in your own category")
 
     class Meta:
         model = Article
-        fields = ("title", "body", "status",
-                  "scope", "category",)
+        fields = (
+            "title",
+            "body",
+            "status",
+            "scope",
+            "category",
+        )
