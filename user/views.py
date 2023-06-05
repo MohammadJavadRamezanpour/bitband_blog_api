@@ -5,7 +5,7 @@ from django.db.models import Q
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import SAFE_METHODS, AllowAny
+from rest_framework.permissions import SAFE_METHODS, AllowAny, IsAuthenticated
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -24,11 +24,11 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_serializer_context(self):
         return {"user": self.request.user}
-        
+
     def get_queryset(self):
         user = self.request.user
         is_logged_in = user.is_authenticated
-        
+
         if user.is_superuser:
             return User.objects.all()
         elif is_logged_in and user.is_user_manager:
@@ -55,7 +55,7 @@ class UserViewSet(viewsets.ModelViewSet):
         )
 
     @action(detail=False, methods=["PATCH"], permission_classes=[AllowAny])
-    def verify_the_user(self, request):
+    def verify(self, request):
         phone = request.GET.get("phone")
         otp = request.data.get("otp")
         data = dict(is_active=True, otp=None)
@@ -105,6 +105,16 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(tokens, status=200)
         except User.DoesNotExist:
             return Response({"error": "wrong otp or phone number"}, status=400)
+
+    @action(detail=False, methods=["PATCH"], permission_classes=[IsAuthenticated])
+    def modify_me(self, request):
+        user = request.user
+
+        serializer = self.get_serializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=200)
 
     def __generate_otp(self, k=5):
         chars = "0123456789"
