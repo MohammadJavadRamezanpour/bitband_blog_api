@@ -1,4 +1,7 @@
+from django.conf import settings
+
 from rest_framework import serializers
+
 from blog.models import Article
 from .category import CategorySerializer
 
@@ -38,13 +41,6 @@ class ArticleReadSerializer(serializers.ModelSerializer):
 
 
 class ArticleWriteSerializer(serializers.ModelSerializer):
-    def validate_category(self, obj):
-        user = self.context.get("user")
-
-        if obj in user.categories.all():
-            return obj
-        raise serializers.ValidationError("create article in your own category")
-
     class Meta:
         model = Article
         fields = (
@@ -54,3 +50,17 @@ class ArticleWriteSerializer(serializers.ModelSerializer):
             "scope",
             "category",
         )
+
+    def validate_category(self, category):
+        user = self.context.get("user")
+
+        if category in user.categories.all():
+            return category
+        raise serializers.ValidationError("create article in your own category")
+
+    def validate_status(self, status):
+        user = self.context.get("user")
+
+        if user.has_perm(settings.ARTICLE_MANAGEMENT):
+            return status
+        raise serializers.ValidationError("you can't change the status")

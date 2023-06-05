@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import BaseUserManager, AbstractUser
 from django.utils.crypto import get_random_string
 
@@ -46,13 +47,37 @@ class User(AbstractUser):
     categories = models.ManyToManyField("blog.Category", null=True, blank=True)
 
     REQUIRED_FIELDS = ["phone"]
-    object = UserManager()
+    objects = UserManager()
 
     def has_perm(self, perm, obj=None):
         if super().has_perm(perm, obj):
             return True
 
         return self.groups.filter(permissions__codename=perm).exists()
+
+    @property
+    def is_article_manager(self):
+        return self.has_perm(settings.ARTICLE_MANAGEMENT)
+
+    @property
+    def is_user_manager(self):
+        return self.has_perm(settings.USER_MANAGEMENT)
+
+    @property
+    def is_golden_user(self):
+        return self.has_perm(settings.GOLDEN)
+
+    @property
+    def is_golden_user(self):
+        return self.has_perm(settings.GOLDEN)
+
+    @property
+    def is_silver_user(self):
+        return self.has_perm(settings.SILVER)
+
+    @property
+    def is_bronze_user(self):
+        return self.has_perm(settings.BRONZE)
 
     @staticmethod
     def get_random_username():

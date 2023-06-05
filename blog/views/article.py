@@ -25,59 +25,30 @@ class ArticleViewset(viewsets.ModelViewSet):
         user = self.request.user
         is_logged_in = user.is_authenticated
 
-        NORMAL_CAN_SEE = [settings.NORMAL]
-        BRONZE_CAN_SEE = NORMAL_CAN_SEE + [settings.BRONZE]
-        SILVER_CAN_SEE = BRONZE_CAN_SEE + [settings.SILVER]
-        GOLDEN_CAN_SEE = SILVER_CAN_SEE + [settings.GOLDEN]
-
         if is_logged_in and user.is_superuser:
             return Article.objects.all()
-        elif is_logged_in and user.has_perm(settings.ARTICLE_MANAGEMENT):
+        elif is_logged_in and user.is_article_manager:
             return Article.objects.filter(category__in=user.categories.all())
-        elif is_logged_in and user.has_perm(settings.GOLDEN):
+        elif is_logged_in and user.is_golden_user:
             return Article.objects.filter(
-                Q(status=Article.VERIFIED, scope__in=GOLDEN_CAN_SEE) | Q(author=user)
+                Q(status=Article.VERIFIED, scope__in=settings.GOLDEN_CAN_SEE)
+                | Q(author=user)
             )
-        elif is_logged_in and user.has_perm(settings.SILVER):
+        elif is_logged_in and user.is_silver_user:
             return Article.objects.filter(
-                Q(status=Article.VERIFIED, scope__in=SILVER_CAN_SEE) | Q(author=user)
+                Q(status=Article.VERIFIED, scope__in=settings.SILVER_CAN_SEE)
+                | Q(author=user)
             )
-        elif is_logged_in and user.has_perm(settings.BRONZE):
+        elif is_logged_in and user.is_bronze_user:
             return Article.objects.filter(
-                Q(status=Article.VERIFIED, scope__in=BRONZE_CAN_SEE) | Q(author=user)
+                Q(status=Article.VERIFIED, scope__in=settings.BRONZE_CAN_SEE)
+                | Q(author=user)
             )
         else:
             return Article.objects.filter(
-                Q(status=Article.VERIFIED, scope__in=NORMAL_CAN_SEE)
+                Q(status=Article.VERIFIED, scope__in=settings.NORMAL_CAN_SEE)
+                | Q(author=user)
             )
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
-
-    @action(
-        detail=True, methods=["PATCH", "PUT"], permission_classes=(IsArticleManager,)
-    )
-    def verify(self, request, pk=None):
-        article = self.get_object()
-
-        data = dict(status=Article.VERIFIED)
-
-        serializer = self.get_serializer(article, data=data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
-        return Response({"msg": "Done"}, status=200)
-
-    @action(
-        detail=True, methods=["PATCH", "PUT"], permission_classes=(IsArticleManager,)
-    )
-    def reject(self, request, pk=None):
-        article = self.get_object()
-
-        data = dict(status=Article.REJECTED)
-
-        serializer = self.get_serializer(article, data=data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
-        return Response({"msg": "Done"}, status=200)

@@ -12,11 +12,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .serializers import UserSerializer, ModifyUserSerializer, CreateUserSerializer
 from .models import User
-from .permissions import IsUserManager
+from .permissions import IsUserManagerOrReadOnly
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsUserManager,)
+    permission_classes = (IsUserManagerOrReadOnly,)
 
     def get_serializer_class(self):
         if self.request.method in ["PUT", "PATCH"]:
@@ -31,28 +31,14 @@ class UserViewSet(viewsets.ModelViewSet):
 
         if user.is_superuser:
             return User.objects.all()
-        elif user.has_perm(settings.USER_MANAGEMENT):
+        elif user.is_user_manager:
             return User.objects.filter(is_staff=False)
-        elif user.has_perm(settings.ARTICLE_MANAGEMENT):
+        elif user.is_article_manager:
             return User.objects.filter(
-                Q(groups__permissions__codename="user.author")
-                | Q(user_permissions__codename="user.author")
+                Q(is_author=True, categories__in=user.categories.all()) | Q(id=user.id)
             )
         else:
             return User.objects.filter(id=user.id)
-
-    @action(detail=True, methods=["PUT", "PATCH"], permission_classes=[IsUserManager])
-    def make_author(self, request, pk=None):
-        user = self.get_object()
-        categories = request.data.get("categories", [])
-
-        data = dict(is_author=True, categories=categories)
-
-        serializer = self.get_serializer(user, data=data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
-        return Response(serializer.data, status=200)
 
     @action(detail=False, methods=["POST"], permission_classes=[AllowAny])
     def register(self, request):
