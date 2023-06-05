@@ -1,16 +1,15 @@
 from random import choices
 
 from django.db.models import Q
-from django.conf import settings
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, SAFE_METHODS, AllowAny
+from rest_framework.permissions import SAFE_METHODS, AllowAny
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .serializers import UserSerializer, ModifyUserSerializer, CreateUserSerializer
+from .serializers import ReadUserSerializer, CreateUserSerializer
 from .models import User
 from .permissions import IsUserManagerOrReadOnly
 
@@ -19,21 +18,22 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = (IsUserManagerOrReadOnly,)
 
     def get_serializer_class(self):
-        if self.request.method in ["PUT", "PATCH"]:
-            return ModifyUserSerializer
-        elif self.request.method == "POST":
-            return CreateUserSerializer
-        else:
-            return UserSerializer
+        if self.request.method in SAFE_METHODS:
+            return ReadUserSerializer
+        return CreateUserSerializer
 
+    def get_serializer_context(self):
+        return {"user": self.request.user}
+        
     def get_queryset(self):
         user = self.request.user
-
+        is_logged_in = user.is_authenticated
+        
         if user.is_superuser:
             return User.objects.all()
-        elif user.is_user_manager:
+        elif is_logged_in and user.is_user_manager:
             return User.objects.filter(is_staff=False)
-        elif user.is_article_manager:
+        elif is_logged_in and user.is_article_manager:
             return User.objects.filter(
                 Q(is_author=True, categories__in=user.categories.all()) | Q(id=user.id)
             )
@@ -54,7 +54,7 @@ class UserViewSet(viewsets.ModelViewSet):
             {"msg": "Please send the otp sent to your phone number"}, status=200
         )
 
-    @action(detail=False, methods=["PUT", "PATCH"], permission_classes=[AllowAny])
+    @action(detail=False, methods=["PATCH"], permission_classes=[AllowAny])
     def verify_the_user(self, request):
         phone = request.GET.get("phone")
         otp = request.data.get("otp")
@@ -75,7 +75,7 @@ class UserViewSet(viewsets.ModelViewSet):
         except User.DoesNotExist:
             return Response({"error": "wrong otp or phone number"}, status=400)
 
-    @action(detail=False, methods=["GET"], permission_classes=[AllowAny])
+    @action(detail=False, methods=["PATCH"], permission_classes=[AllowAny])
     def get_otp(self, request):
         phone = request.GET.get("phone")
         data = dict(otp=self.__generate_otp())

@@ -64,6 +64,10 @@ class User(AbstractUser):
         return self.has_perm(settings.USER_MANAGEMENT)
 
     @property
+    def is_manager(self):
+        return self.has_perm(settings.USER_MANAGEMENT) or self.has_perm(settings.ARTICLE_MANAGEMENT)
+
+    @property
     def is_golden_user(self):
         return self.has_perm(settings.GOLDEN)
 
