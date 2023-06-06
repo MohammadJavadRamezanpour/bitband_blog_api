@@ -13,14 +13,9 @@ class ArticleReadSerializer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField()
 
     def get_author(self, obj):
-        from user.serializers import SimpleUserSerializer, UserSerializer
+        from user.serializers import ReadUserSerializer
 
-        user = self.context["user"]
-
-        if user.is_staff:
-            return UserSerializer(obj.author).data
-
-        return SimpleUserSerializer(obj.author).data
+        return ReadUserSerializer(obj.author, context=self.context).data
 
     get_scope = lambda self, obj: obj.get_scope_display()
     get_status = lambda self, obj: obj.get_status_display()

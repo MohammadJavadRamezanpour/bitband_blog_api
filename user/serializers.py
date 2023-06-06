@@ -22,12 +22,14 @@ class ReadUserSerializer(serializers.ModelSerializer):
 
     def get_fields(self):
         fields = super().get_fields()
+        allowed_fields = ["username", "email", "phone", "first_name", "last_name"]
+        print(self.context)
         user = self.context["user"]
-        exclude = ["groups"]
 
         if not user.is_manager:
-            for exclude_this in exclude:
-                fields.pop(exclude_this)
+            for field in fields.copy():
+                if field not in allowed_fields:
+                    fields.pop(field)
 
         return fields
 
@@ -63,11 +65,5 @@ class CreateUserSerializer(serializers.ModelSerializer):
             and not user.is_user_manager
             and not allowed_fields >= dataset
         ):
-            raise serializers.ValidationError("you cant change these fields")
+            raise serializers.ValidationError("you can't change these fields")
         return data
-
-
-class SimpleUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ("email", "phone", "first_name", "last_name")
