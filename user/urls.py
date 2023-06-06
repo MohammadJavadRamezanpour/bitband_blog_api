@@ -6,5 +6,3 @@ router = routers.DefaultRouter()
 router.register("", UserViewSet, basename="users")
 
 urlpatterns = router.urls
-
-print(urlpatterns)
