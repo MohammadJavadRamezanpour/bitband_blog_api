@@ -46,6 +46,18 @@ class ArticleWriteSerializer(serializers.ModelSerializer):
             "category",
         )
 
+    def get_fields(self):
+        fields = super().get_fields()
+        allowd_fields = ("title", "body", "scope", "category")
+        user = self.context["user"]
+
+        if not user.is_article_manager:
+            for field in fields.copy():
+                if not field in allowd_fields:
+                    fields.pop(field)
+
+        return fields
+
     def validate_category(self, category):
         user = self.context.get("user")
 
