@@ -67,7 +67,8 @@ class ArticleWriteSerializer(serializers.ModelSerializer):
 
     def validate_status(self, status):
         user = self.context.get("user")
-
+        print(user)
+        print(user.has_perm(settings.ARTICLE_MANAGEMENT))
         if user.has_perm(settings.ARTICLE_MANAGEMENT):
             return status
         raise serializers.ValidationError("you can't change the status")
