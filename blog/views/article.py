@@ -44,13 +44,13 @@ class ArticleViewset(viewsets.ModelViewSet):
                 Q(status=Article.VERIFIED, scope__in=settings.BRONZE_CAN_SEE)
                 | Q(author=user)
             )
+        elif is_logged_in and user.is_author:
+            return Article.objects.filter(author=user)
         elif is_logged_in:
             return Article.objects.filter(
                 Q(status=Article.VERIFIED, scope__in=settings.NORMAL_CAN_SEE)
                 | Q(author=user)
             )
-        elif is_logged_in and user.is_author:
-            return Article.objects.filter(author=user)
         else:
             return Article.objects.filter(
                 status=Article.VERIFIED, scope__in=settings.NORMAL_CAN_SEE
