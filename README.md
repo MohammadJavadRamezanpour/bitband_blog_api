@@ -22,7 +22,7 @@ Follow these steps to set up and run the API locally:
   ```
   git clone  https://github.com/MohammadJavadRamezanpour/bitband_blog_api.git src
   ```
-2. Create and activate a virtual enviroment
+2. Create and activate a virtual environment
 	- On macOS and Linux:
   ```
   python3 -m venv env
