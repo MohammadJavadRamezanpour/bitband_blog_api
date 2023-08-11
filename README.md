@@ -1,7 +1,7 @@
 # Bitband Blog API
 
 ## Overview
-This is a RESTful API for managing blog posts with a rich athentication and authorization architecture. It provides endpoints to create, read, update, and delete blog posts and users. The API is built using Django Rest Framework (DRF) and follows REST principles. the code level explanation is provided in [this youtube video])(https://youtu.be/OGzkLCLROP0) 
+This is a RESTful API for managing blog posts with a rich athentication and authorization architecture. It provides endpoints to create, read, update, and delete blog posts and users. The API is built using Django Rest Framework (DRF) and follows REST principles. the code level explanation is provided in [this youtube video](https://youtu.be/OGzkLCLROP0) 
 
 ## Features
 - Create a new article if you are an author or article manager
